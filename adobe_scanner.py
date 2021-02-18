@@ -17,9 +17,11 @@ def error_print(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 
+# noinspection SpellCheckingInspection
 def main():
     parser = OptionParser()
 
+    # noinspection SpellCheckingInspection
     parser.add_option("-o", "--outputfolder", dest="output_folder",
                       default=".",
                       help="write output file to specified directory")
@@ -46,6 +48,8 @@ def main():
     with open(configuration_file) as fin:
         config = yaml.safe_load(fin)
 
+        org_id = config["org_id"]
+
         output_folder = Path(".")
         if 'output_folder' in config:
             output_folder = Path(config['output_folder'])
@@ -60,16 +64,16 @@ def main():
             exit(2)
 
         if not output_folder.is_dir():
-            error_print("IOErrror: " + options.output_folder + ": not a directory")
+            error_print("IOError: " + options.output_folder + ": not a directory")
             exit(2)
 
         output_file = output_folder.joinpath(options.uuid + ext)
 
-        conn = umapi_client.Connection(org_id=config["org_id"], auth_dict=config)
+        conn = umapi_client.Connection(org_id=org_id, auth_dict=config)
 
         groups = umapi_client.GroupsQuery(conn)
 
-        meta = {'created': datetime.now().isoformat()}
+        meta = {'created': datetime.now().isoformat(), 'org_id': org_id, 'tech_acct_id': config['tech_acct_id']}
 
         o_groups = []
         o_users = []
