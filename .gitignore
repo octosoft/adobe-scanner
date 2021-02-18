@@ -130,3 +130,7 @@ dmypy.json
 
 #PyCharm
 .idea/
+
+#Venv scripts
+Scripts/
+pyvenv.cfg
