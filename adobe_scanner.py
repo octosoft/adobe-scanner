@@ -30,25 +30,11 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    ext = ".scaa"
-
-    output_folder = Path(options.output_folder)
-
-    if not output_folder.exists():
-        error_print("IOError: " + options.output_folder + ": no such file or directory")
-        exit(2)
-
-    if not output_folder.is_dir():
-        error_print("IOErrror: " + options.output_folder + ": not a directory")
-        exit(2)
-
-    output_file = output_folder.joinpath(options.uuid + ext)
-
-    configuration_file = Path("adobe_scanner_config.yaml")
-
     #
     # probe for configuration file outside current folder
     #
+    configuration_file = Path("adobe_scanner_config.yaml")
+
     folder = os.environ.get("OCTOSAM_CONFIGURATION_FOLDER")
     if folder:
         config_folder = Path(folder)
@@ -57,8 +43,27 @@ def main():
             if probe.exists():
                 configuration_file = probe
 
-    with open(configuration_file) as f:
-        config = yaml.safe_load(f)
+    with open(configuration_file) as fin:
+        config = yaml.safe_load(fin)
+
+        output_folder = Path(".")
+        if 'output_folder' in config:
+            output_folder = Path(config['output_folder'])
+
+        if options.output_folder != ".":
+            output_folder = Path(options.output_folder)
+
+        ext = ".scaa"
+
+        if not output_folder.exists():
+            error_print("IOError: " + options.output_folder + ": no such file or directory")
+            exit(2)
+
+        if not output_folder.is_dir():
+            error_print("IOErrror: " + options.output_folder + ": not a directory")
+            exit(2)
+
+        output_file = output_folder.joinpath(options.uuid + ext)
 
         conn = umapi_client.Connection(org_id=config["org_id"], auth_dict=config)
 
