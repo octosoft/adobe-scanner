@@ -78,7 +78,6 @@ def main():
         o_groups = []
         o_users = []
 
-        # print all the group details
         for group in groups:
             o_groups.append(group)
 
