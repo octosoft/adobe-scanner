@@ -1,7 +1,6 @@
 import sys
 import os
 import yaml
-import json
 import gzip
 
 # noinspection PyCompatibility
@@ -9,12 +8,61 @@ from pathlib import Path
 from datetime import datetime
 from optparse import OptionParser
 from uuid import uuid1
+from xml.dom.minidom import Document, Element
 
 import umapi_client
+
+# noinspection SpellCheckingInspection
+octoscan_build = "adobe_scanner 1.10.0.0 - 2021-02-20"
 
 
 def error_print(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
+
+def append_info_element(doc: Document, element: Element, name: str, info_type: str, value: str) -> None:
+    """
+        Appends an info element to the specified element in the xml document
+        :param doc:
+        :param element:
+        :param name:
+        :param info_type:
+        :param value:
+        :return:
+        """
+    assert isinstance(element, Element)
+    info = doc.createElement("info")
+    info.setAttribute("name", name)
+    info.setAttribute("type", info_type)
+    info.setAttribute("value", value)
+    element.appendChild(info)
+
+
+def append_dict(doc: Document, element: Element, d: {}) -> None:
+    # noinspection SpellCheckingInspection
+    """
+            Appends a dictionary to the specified element in the xml document.
+            This is a very trivial serialization of the dicts returned by the umapi queries
+
+            :param doc:
+            :param element:
+            :param d:
+            :return:
+
+        """
+    for key, value in d.items():
+        if isinstance(value, str):
+            append_info_element(doc, element, key, 'S', value)
+        if isinstance(value, int):
+            append_info_element(doc, element, key, 'I', str(value))
+        if isinstance(value, list):
+            list_element = doc.createElement(key)
+            for i in value:
+                item = doc.createElement('item')
+                text = doc.createTextNode(i)
+                item.appendChild(text)
+                list_element.appendChild(item)
+            element.appendChild(list_element)
 
 
 # noinspection SpellCheckingInspection
@@ -69,27 +117,47 @@ def main():
 
         output_file = output_folder.joinpath(options.uuid + ext)
 
+        doc = Document()
+        xml = doc.createElement('octoscan')
+        xml.setAttribute("uuid", options.uuid)
+        xml.setAttribute("timestamp", datetime.utcnow().replace(microsecond=0).isoformat())
+        xml.setAttribute("build", octoscan_build)
+
+        doc.appendChild(xml)
+
+        meta = doc.createElement('meta')
+        append_info_element(doc, meta, 'org_id', 'S', org_id)
+        append_info_element(doc, meta, 'tech_acct_id', 'S', config['tech_acct_id'])
+        xml.appendChild(meta)
+
         conn = umapi_client.Connection(org_id=org_id, auth_dict=config)
 
-        groups = umapi_client.GroupsQuery(conn)
+        groups = doc.createElement('groups')
 
-        meta = {'created': datetime.now().isoformat(), 'org_id': org_id, 'tech_acct_id': config['tech_acct_id']}
+        umapi_groups = umapi_client.GroupsQuery(conn)
 
-        o_groups = []
-        o_users = []
+        for umapi_group in umapi_groups:
+            g = doc.createElement('group')
+            g.setAttribute('id', str(umapi_group['groupId']))
+            g.setAttribute('name', umapi_group['groupName'])
+            append_dict(doc, g, umapi_group)
+            groups.appendChild(g)
 
-        for group in groups:
-            o_groups.append(group)
+        xml.appendChild(groups)
 
-        users = umapi_client.UsersQuery(conn)
-        for user in users:
-            o_users.append(user)
+        users = doc.createElement('users')
+        umapi_users = umapi_client.UsersQuery(conn)
 
-        data = {'meta': meta, 'groups': o_groups, 'users': o_users}
+        for umapi_user in umapi_users:
+            u = doc.createElement('user')
+            u.setAttribute('name', umapi_user['username'])
+            append_dict(doc, u, umapi_user)
+            users.appendChild(u)
+
+        xml.appendChild(users)
 
         with gzip.open(output_file, 'w') as fout:
-            fout.write(json.dumps(data, ensure_ascii=False, indent=4).encode('utf-8'))
-
+            fout.write(doc.toprettyxml(indent="\t").encode('utf-8'))
             print(output_file)
 
 
