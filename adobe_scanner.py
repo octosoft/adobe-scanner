@@ -2,6 +2,7 @@ import sys
 import os
 import yaml
 import gzip
+import time
 
 # noinspection PyCompatibility
 from pathlib import Path
@@ -67,6 +68,7 @@ def append_dict(doc: Document, element: Element, d: {}) -> None:
 
 # noinspection SpellCheckingInspection
 def main():
+    start_time = time.time()
     parser = OptionParser()
 
     # noinspection SpellCheckingInspection
@@ -138,7 +140,6 @@ def main():
 
         for umapi_group in umapi_groups:
             g = doc.createElement('group')
-            g.setAttribute('id', str(umapi_group['groupId']))
             g.setAttribute('name', umapi_group['groupName'])
             append_dict(doc, g, umapi_group)
             groups.appendChild(g)
@@ -155,6 +156,12 @@ def main():
             users.appendChild(u)
 
         xml.appendChild(users)
+
+        end_time = time.time()
+
+        performance = doc.createElement('octoscan_performance')
+        append_info_element(doc, performance, 'sencods', 'I', str(int(end_time - start_time)))
+        xml.appendChild(performance)
 
         with gzip.open(output_file, 'w') as fout:
             fout.write(doc.toprettyxml(indent="\t").encode('utf-8'))
