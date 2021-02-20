@@ -76,6 +76,10 @@ def main():
                       default=".",
                       help="write output file to specified directory")
 
+    parser.add_option("-t", "--tag", dest="tag",
+                      default="",
+                      help="specify a tag that gets identify this specific scanner configuration")
+
     parser.add_option("-u", "--uuid", dest="uuid",
                       help="specify unique id to use",
                       default=str(uuid1()))
@@ -126,6 +130,12 @@ def main():
         xml.setAttribute("build", octoscan_build)
 
         doc.appendChild(xml)
+
+        octoscan_config = doc.createElement('octoscan_config')
+        if len(options.tag) > 0:
+            append_info_element(doc, octoscan_config, 'tag', 'S', options.tag)
+        append_info_element(doc, octoscan_config, 'OutputFolder', 'S', str(output_folder))
+        xml.appendChild(octoscan_config)
 
         meta = doc.createElement('meta')
         append_info_element(doc, meta, 'org_id', 'S', org_id)
