@@ -23,6 +23,10 @@ private_key_file: c:/Tools/Cert/acme_private.pem
 #
 output_folder: D:/OctoSAM/Shared/Data
 
+#
+# configure log folder if
+
+log_folder: D:/OctoSAM/Shared/Data
 
 
 

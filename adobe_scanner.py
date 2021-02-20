@@ -1,12 +1,15 @@
 import sys
 import os
+from typing import Any
+
 import yaml
 import gzip
 import time
+import logging
 
 # noinspection PyCompatibility
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, date
 from optparse import OptionParser
 from uuid import uuid1
 from xml.dom.minidom import Document, Element
@@ -16,8 +19,15 @@ import umapi_client
 # noinspection SpellCheckingInspection
 octoscan_build = "adobe_scanner 1.10.0.0 - 2021-02-20"
 
+# global config
+config = {}
 
 def error_print(*args, **kwargs):
+    """
+    shortcut to print to stderr for fatal problems before logging is set up
+    :param args:
+    :param kwargs:
+    """
     print(*args, file=sys.stderr, **kwargs)
 
 
@@ -66,9 +76,100 @@ def append_dict(doc: Document, element: Element, d: {}) -> None:
             element.appendChild(list_element)
 
 
+def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
+    """
+            Call Adobe umapi and serialize results to compressed xml document
+            :param log:
+            :param options:
+            :param output_folder:
+            :return:
+    """
+
+    global config
+    scanned_groups = 0
+    scanned_users = 0
+
+    org_id = config['org_id']
+
+    # noinspection SpellCheckingInspection
+    ext = ".scaa"
+    output_file = output_folder.joinpath(options.uuid + ext)
+
+    start_time = time.time()
+
+    doc = Document()
+    xml = doc.createElement('octoscan')
+    xml.setAttribute("uuid", options.uuid)
+    xml.setAttribute("timestamp", datetime.utcnow().replace(microsecond=0).isoformat())
+    xml.setAttribute("build", octoscan_build)
+
+    doc.appendChild(xml)
+
+    octoscan_config = doc.createElement('octoscan_config')
+    if len(options.tag) > 0:
+        append_info_element(doc, octoscan_config, 'tag', 'S', options.tag)
+    append_info_element(doc, octoscan_config, 'OutputFolder', 'S', str(output_folder))
+    xml.appendChild(octoscan_config)
+
+    meta = doc.createElement('meta')
+    append_info_element(doc, meta, 'org_id', 'S', org_id)
+    append_info_element(doc, meta, 'tech_acct_id', 'S', config['tech_acct_id'])
+    xml.appendChild(meta)
+
+    conn = None
+
+    try:
+        conn = umapi_client.Connection(org_id=org_id, auth_dict=config)
+    except Exception as e:
+        log.exception(e)
+
+    if not conn:
+        log.error("Failed to connect to Adobe cloud")
+
+    groups = doc.createElement('groups')
+
+    umapi_groups = umapi_client.GroupsQuery(conn)
+
+    for umapi_group in umapi_groups:
+        g = doc.createElement('group')
+        g.setAttribute('name', umapi_group['groupName'])
+        append_dict(doc, g, umapi_group)
+        scanned_groups += 1
+        groups.appendChild(g)
+
+    xml.appendChild(groups)
+
+    users = doc.createElement('users')
+    umapi_users = umapi_client.UsersQuery(conn)
+
+    for umapi_user in umapi_users:
+        u = doc.createElement('user')
+        u.setAttribute('name', umapi_user['username'])
+        append_dict(doc, u, umapi_user)
+        scanned_users += 1
+        users.appendChild(u)
+
+    xml.appendChild(users)
+
+    end_time = time.time()
+
+    performance = doc.createElement('octoscan_performance')
+    append_info_element(doc, performance, 'seconds', 'I', str(int(end_time - start_time)))
+    xml.appendChild(performance)
+
+    with gzip.open(output_file, 'w') as f_out:
+        f_out.write(doc.toprettyxml(indent="\t").encode('utf-8'))
+        print(output_file)
+
+    log.info(f"Adobe umapi {scanned_users} users {scanned_groups} groups scanned output to {output_file}")
+
+
 # noinspection SpellCheckingInspection
 def main():
-    start_time = time.time()
+    """
+    Main function
+    """
+    global config
     parser = OptionParser()
 
     # noinspection SpellCheckingInspection
@@ -83,6 +184,10 @@ def main():
     parser.add_option("-u", "--uuid", dest="uuid",
                       help="specify unique id to use",
                       default=str(uuid1()))
+
+    parser.add_option("-l", "--log", dest="log_level",
+                      help="specify loglevel to use",
+                      default="INFO")
 
     (options, args) = parser.parse_args()
 
@@ -99,10 +204,36 @@ def main():
             if probe.exists():
                 configuration_file = probe
 
+    log_file = None
     with open(configuration_file) as fin:
         config = yaml.safe_load(fin)
 
         org_id = config["org_id"]
+
+        if 'log_folder' in config:
+            log_folder = Path(config['log_folder'])
+            if not log_folder.exists():
+                error_print(f"IOError: {log_folder}: no such file or directory")
+                exit(2)
+
+            stamp = date.today().isoformat()
+            log_file_name = f"adobe_scanner_{stamp}_log.txt"
+            log_file = log_folder.joinpath(log_file_name)
+
+        # create a logger
+        log = logging.getLogger('adobe-scanner')
+        numeric_level = getattr(logging, options.log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: %s' % options.log_level)
+        if log_file:
+            logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
+                                filename=str(log_file),
+                                level=numeric_level)
+        else:
+            logging.basicConfig(format='%(levelname)s - %(message)s',
+                                level=numeric_level)
+
+        log.info(f"Adobe umapi scanner started org: {org_id}")
 
         output_folder = Path(".")
         if 'output_folder' in config:
@@ -111,71 +242,22 @@ def main():
         if options.output_folder != ".":
             output_folder = Path(options.output_folder)
 
-        ext = ".scaa"
-
         if not output_folder.exists():
-            error_print("IOError: " + options.output_folder + ": no such file or directory")
+            msg = f"IOError: {options.output_folder}: no such file or directory"
+            log.error(msg)
+            error_print(msg)
             exit(2)
 
         if not output_folder.is_dir():
-            error_print("IOError: " + options.output_folder + ": not a directory")
+            msg = f"IOError: {options.output_folder}: not a directory"
+            log.error(msg)
+            error_print(msg)
             exit(2)
 
-        output_file = output_folder.joinpath(options.uuid + ext)
-
-        doc = Document()
-        xml = doc.createElement('octoscan')
-        xml.setAttribute("uuid", options.uuid)
-        xml.setAttribute("timestamp", datetime.utcnow().replace(microsecond=0).isoformat())
-        xml.setAttribute("build", octoscan_build)
-
-        doc.appendChild(xml)
-
-        octoscan_config = doc.createElement('octoscan_config')
-        if len(options.tag) > 0:
-            append_info_element(doc, octoscan_config, 'tag', 'S', options.tag)
-        append_info_element(doc, octoscan_config, 'OutputFolder', 'S', str(output_folder))
-        xml.appendChild(octoscan_config)
-
-        meta = doc.createElement('meta')
-        append_info_element(doc, meta, 'org_id', 'S', org_id)
-        append_info_element(doc, meta, 'tech_acct_id', 'S', config['tech_acct_id'])
-        xml.appendChild(meta)
-
-        conn = umapi_client.Connection(org_id=org_id, auth_dict=config)
-
-        groups = doc.createElement('groups')
-
-        umapi_groups = umapi_client.GroupsQuery(conn)
-
-        for umapi_group in umapi_groups:
-            g = doc.createElement('group')
-            g.setAttribute('name', umapi_group['groupName'])
-            append_dict(doc, g, umapi_group)
-            groups.appendChild(g)
-
-        xml.appendChild(groups)
-
-        users = doc.createElement('users')
-        umapi_users = umapi_client.UsersQuery(conn)
-
-        for umapi_user in umapi_users:
-            u = doc.createElement('user')
-            u.setAttribute('name', umapi_user['username'])
-            append_dict(doc, u, umapi_user)
-            users.appendChild(u)
-
-        xml.appendChild(users)
-
-        end_time = time.time()
-
-        performance = doc.createElement('octoscan_performance')
-        append_info_element(doc, performance, 'sencods', 'I', str(int(end_time - start_time)))
-        xml.appendChild(performance)
-
-        with gzip.open(output_file, 'w') as fout:
-            fout.write(doc.toprettyxml(indent="\t").encode('utf-8'))
-            print(output_file)
+        try:
+            scan_umapi(log, options, output_folder)
+        except Exception as e:
+            log.exception(e)
 
 
 if __name__ == '__main__':
