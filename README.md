@@ -51,7 +51,7 @@ The files can also be uploaded via OctoCollect upload server running on Windows 
 
 ### Open File Format
 
-The produced file is a zlib compressed .json file that contains all information as clear text
+The produced file is a zlib compressed XML file that contains all information as clear text.
 
 ### Scanner Source License
 
