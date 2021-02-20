@@ -1,6 +1,6 @@
 import sys
 import os
-from typing import Any
+from typing import Any, Dict
 
 import yaml
 import gzip
@@ -20,7 +20,8 @@ import umapi_client
 octoscan_build = "adobe_scanner 1.10.0.0 - 2021-02-20"
 
 # global config
-config = {}
+config: Dict[Any, Any] = {}
+
 
 def error_print(*args, **kwargs):
     """
@@ -85,7 +86,6 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
             :return:
     """
 
-    global config
     scanned_groups = 0
     scanned_users = 0
 
@@ -204,60 +204,66 @@ def main():
             if probe.exists():
                 configuration_file = probe
 
-    log_file = None
     with open(configuration_file) as fin:
         config = yaml.safe_load(fin)
 
+    if 'org_id' in config:
         org_id = config["org_id"]
+    else:
+        raise ValueError(f"Cannot read 'org_id' from config file {configuration_file}")
 
-        if 'log_folder' in config:
-            log_folder = Path(config['log_folder'])
-            if not log_folder.exists():
-                error_print(f"IOError: {log_folder}: no such file or directory")
-                exit(2)
+    log_file = None
 
-            stamp = date.today().isoformat()
-            log_file_name = f"adobe_scanner_{stamp}_log.txt"
-            log_file = log_folder.joinpath(log_file_name)
-
-        # create a logger
-        log = logging.getLogger('adobe-scanner')
-        numeric_level = getattr(logging, options.log_level.upper(), None)
-        if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: %s' % options.log_level)
-        if log_file:
-            logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
-                                filename=str(log_file),
-                                level=numeric_level)
-        else:
-            logging.basicConfig(format='%(levelname)s - %(message)s',
-                                level=numeric_level)
-
-        log.info(f"Adobe umapi scanner started org: {org_id}")
-
-        output_folder = Path(".")
-        if 'output_folder' in config:
-            output_folder = Path(config['output_folder'])
-
-        if options.output_folder != ".":
-            output_folder = Path(options.output_folder)
-
-        if not output_folder.exists():
-            msg = f"IOError: {options.output_folder}: no such file or directory"
-            log.error(msg)
-            error_print(msg)
+    if 'log_folder' in config:
+        log_folder = Path(config['log_folder'])
+        if not log_folder.exists():
+            error_print(f"IOError: {log_folder}: no such file or directory")
             exit(2)
 
-        if not output_folder.is_dir():
-            msg = f"IOError: {options.output_folder}: not a directory"
-            log.error(msg)
-            error_print(msg)
-            exit(2)
+        stamp = date.today().isoformat()
+        log_file_name = f"adobe_scanner_{stamp}_log.txt"
+        log_file = log_folder.joinpath(log_file_name)
 
-        try:
-            scan_umapi(log, options, output_folder)
-        except Exception as e:
-            log.exception(e)
+    # create a logger
+    log = logging.getLogger('adobe-scanner')
+    numeric_level = getattr(logging, options.log_level.upper(), None)
+
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % options.log_level)
+
+    if log_file:
+        logging.basicConfig(format='%(asctime)s %(levelname)s - %(message)s',
+                            filename=str(log_file),
+                            level=numeric_level)
+    else:
+        logging.basicConfig(format='%(levelname)s - %(message)s',
+                            level=numeric_level)
+
+    log.info(f"Adobe umapi scanner started org: {org_id}")
+
+    output_folder = Path(".")
+    if 'output_folder' in config:
+        output_folder = Path(config['output_folder'])
+
+    if options.output_folder != ".":
+        output_folder = Path(options.output_folder)
+
+    if not output_folder.exists():
+        msg = f"IOError: {options.output_folder}: no such file or directory"
+        log.error(msg)
+        error_print(msg)
+        exit(2)
+
+    if not output_folder.is_dir():
+        msg = f"IOError: {options.output_folder}: not a directory"
+        log.error(msg)
+        error_print(msg)
+        exit(2)
+
+    try:
+        scan_umapi(log, options, output_folder)
+    except Exception as e:
+        log.exception(e)
 
 
 if __name__ == '__main__':
