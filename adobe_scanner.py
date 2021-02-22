@@ -189,20 +189,34 @@ def main():
                       help="specify loglevel to use",
                       default="INFO")
 
+    parser.add_option("-c", "--config", dest="config_file",
+                      help="specify configuration file to use",
+                      default="")
+
     (options, args) = parser.parse_args()
 
     #
     # probe for configuration file outside current folder
     #
-    configuration_file = Path("adobe_scanner_config.yaml")
+    # options --config or OCTOSAM_CONFIGURATION_FOLDER environment variables
+    #
 
-    folder = os.environ.get("OCTOSAM_CONFIGURATION_FOLDER")
-    if folder:
-        config_folder = Path(folder)
-        if config_folder.exists():
-            probe = config_folder.joinpath(configuration_file)
-            if probe.exists():
-                configuration_file = probe
+    if len(options.config_file):
+        configuration_file = Path(options.config_file)
+    else:
+        configuration_file = Path("adobe_scanner_config.yaml")
+
+        folder = os.environ.get("OCTOSAM_CONFIGURATION_FOLDER")
+        if folder:
+            config_folder = Path(folder)
+            if config_folder.exists():
+                probe = config_folder.joinpath(configuration_file)
+                if probe.exists():
+                    configuration_file = probe
+
+    if not configuration_file.exists():
+        error_print(f"IOError: {configuration_file}: no such file or directory")
+        raise FileNotFoundError(f"Cannot find configuration file {configuration_file}")
 
     with open(configuration_file) as fin:
         config = yaml.safe_load(fin)
