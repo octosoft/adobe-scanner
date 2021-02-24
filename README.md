@@ -23,7 +23,7 @@ it's recommended that you create a virtual environment to install the required m
 
 ```shell
 python -m pip install --upgrade pip
-pip install -r d:\OctoSAM\Server\Scanners\adobe_scanner\requirements.txt
+pip install -r d:/ctoSAM/Server/Scanners/adobe_scanner/requirements.txt
 ```
 
 ### Configuration
