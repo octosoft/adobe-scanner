@@ -9,8 +9,10 @@ The produced file has a .scaa extension.
 
 ### Installation
 
-The current version of the scanner was tested with Python 3.8.7.
-Install Python https://www.python.org/downloads/release/python-387/
+The current version of the scanner was tested with Python 3.8.8.
+Install Python https://www.python.org/downloads/release/python-388/
+System-wide installation is recommended. If you install in the user context, 
+you have to consider the user context for invocation of the script - for example from the OctoSAM Service Account.
 
 Update pip and install the required python modules. 
 The scanner uses the umapi-client for Python provided by Adobe which is distributed via 
@@ -21,7 +23,7 @@ it's recommended that you create a virtual environment to install the required m
 
 ```shell
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r d:\OctoSAM\Server\Scanners\adobe_scanner\requirements.txt
 ```
 
 ### Configuration
@@ -39,10 +41,13 @@ You need the following information to configure a the client connection
 
 Configure these values in adobe_scanner_config.yaml
 
+Choose location of the odobe_scanner_config.yaml so that the specified secrets and the private key file
+are protected from reading by non-privileged users.
+
 ### Invocation and Collection of Generated Files
 
 ```bash
-python adobe_scanner.py
+python adobe_scanner.py --config d:\OctoSAM\MySecretConfigs\adobe_scanner_config.yaml
 ```
 
 You are completely free on how to transfer the generated files to the OctoSAM Import Service import folder.
