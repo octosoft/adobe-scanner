@@ -41,7 +41,7 @@ You need the following information to configure a the client connection
 
 Configure these values in adobe_scanner_config.yaml
 
-Choose location of the odobe_scanner_config.yaml so that the specified secrets and the private key file
+Choose location of the adobe_scanner_config.yaml so that the specified secrets and the private key file
 are protected from reading by non-privileged users.
 
 ### Invocation and Collection of Generated Files
@@ -51,7 +51,7 @@ python adobe_scanner.py --config d:\OctoSAM\MySecretConfigs\adobe_scanner_config
 ```
 
 You are completely free on how to transfer the generated files to the OctoSAM Import Service import folder.
-If you are running the scanner on windows, you can configure the collection share in adobe_scanner_config.yaml.
+If you are running the scanner on Windows, you can configure the collection share in adobe_scanner_config.yaml.
 The files can also be uploaded via OctoCollect upload server running on Windows or Linux.
 
 ### Open File Format
