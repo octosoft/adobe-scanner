@@ -17,7 +17,7 @@ from xml.dom.minidom import Document, Element
 import umapi_client
 
 # noinspection SpellCheckingInspection
-octoscan_build = "adobe_scanner 1.10.0.0 - 2021-02-20"
+octoscan_build = "adobe_scanner 1.10.0.30 - 2021-05-01"
 
 # global config
 config: Dict[Any, Any] = {}
