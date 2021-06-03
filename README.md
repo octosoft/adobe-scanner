@@ -4,12 +4,13 @@
 
 ## Basic Operation
 
-The scan module for Adobe Cloud is a Python script.
+The OctoSAM Inventory scan module for Adobe Cloud is a Python script.
 The produced file has a .scaa extension.
 
 ### Installation
 
 The current version of the scanner was tested with Python 3.8.8.
+
 Install Python https://www.python.org/downloads/release/python-388/
 System-wide installation is recommended. If you install in the user context, 
 you have to consider the user context for invocation of the script - for example from the OctoSAM Service Account.
@@ -23,7 +24,7 @@ it's recommended that you create a virtual environment to install the required m
 
 ```shell
 python -m pip install --upgrade pip
-pip install -r d:/ctoSAM/Server/Scanners/adobe_scanner/requirements.txt
+pip install -r d:/OctoSAM/Server/Scanners/adobe_scanner/requirements.txt
 ```
 
 ### Configuration
@@ -31,7 +32,7 @@ pip install -r d:/ctoSAM/Server/Scanners/adobe_scanner/requirements.txt
 You need to register an integration on Adobe I/O via the Enterprise Dashboard
 see https://adobe-apiplatform.github.io/umapi-client.py/
 
-You need the following information to configure a the client connection
+You need the following information to configure a client connection
 
 * Organization ID
 * Tech Account ID
