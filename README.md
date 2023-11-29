@@ -2,9 +2,9 @@
 
 This is the UMAPI 3 OAuth 2.0 based scanner. The older JWT based scanner is in the Folder JWT
 
-## Adobe Cloud Scanner for [OctoSAM Inventory](https://www.octosoft.ch)
+## Adobe cloud scanner for [OctoSAM Inventory](https://www.octosoft.ch)
 
-## Basic Operation
+## Basic operation
 
 The OctoSAM Inventory scan module for Adobe Cloud is a Python script.
 The produced file has a .scaa extension.
@@ -44,7 +44,7 @@ Configure these values in adobe_scanner_config.yaml
 Choose a location of the adobe_scanner_config.yaml so that the specified 
 secrets are protected from reading by non-privileged users.
 
-### Invocation and Collection of Generated Files
+### Invocation and collection of generated files
 
 ```bash
 python adobe_scanner.py --config d:\OctoSAM\MySecretConfigs\adobe_scanner_config.yaml
@@ -54,10 +54,10 @@ You are completely free on how to transfer the generated files to the OctoSAM Im
 If you are running the scanner on Windows, you can configure the collection share in adobe_scanner_config.yaml.
 The files can also be uploaded via OctoCollect upload server running on Windows or Linux.
 
-### Open File Format
+### Open file format
 
 The produced file is a zlib compressed XML file that contains all information as clear text.
 
-### Scanner Source License
+### Scanner source license
 
 The source code of the Adobe scanner is licensed under the MIT open source license. 
