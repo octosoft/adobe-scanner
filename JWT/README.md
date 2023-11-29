@@ -1,8 +1,8 @@
 # adobe-scanner
 
-This is the UMAPI 3 OAuth 2.0 based scanner. The older JWT based scanner is in the Folder JWT
-
 ## Adobe Cloud Scanner for [OctoSAM Inventory](https://www.octosoft.ch)
+
+OLD VERSION - JWT Based Autorisation
 
 ## Basic Operation
 
@@ -11,8 +11,9 @@ The produced file has a .scaa extension.
 
 ### Installation
 
-The current version of the scanner was tested with Python 3.11.6
+The current version of the scanner was tested with Python 3.8.8.
 
+Install Python https://www.python.org/downloads/release/python-388/
 System-wide installation is recommended. If you install in the user context, 
 you have to consider the user context for invocation of the script - for example from the OctoSAM Service Account.
 
@@ -30,19 +31,21 @@ pip install -r d:/OctoSAM/Server/Scanners/adobe_scanner/requirements.txt
 
 ### Configuration
 
-You need to register a project with UMAPI integration on Adobe Developer Console
-see https://adobe-apiplatform.github.io/umapi-documentation/en/UM_Authentication.html
+You need to register an integration on Adobe I/O via the Enterprise Dashboard
+see https://adobe-apiplatform.github.io/umapi-client.py/
 
 You need the following information to configure a client connection
 
 * Organization ID
-* Client ID
+* Tech Account ID
+* API Key (sometimes referred to as Client ID in the docs)
 * Client Secret
+* Private Key File (unencrypted form)
 
 Configure these values in adobe_scanner_config.yaml
 
-Choose a location of the adobe_scanner_config.yaml so that the specified 
-secrets are protected from reading by non-privileged users.
+Choose location of the adobe_scanner_config.yaml so that the specified secrets and the private key file
+are protected from reading by non-privileged users.
 
 ### Invocation and Collection of Generated Files
 

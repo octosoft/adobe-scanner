@@ -17,7 +17,7 @@ from xml.dom.minidom import Document, Element
 import umapi_client
 
 # noinspection SpellCheckingInspection
-octoscan_build = "adobe_scanner 1.10.7.16 - 2023-11-29"
+octoscan_build = "adobe_scanner 1.10.0.30 - 2021-05-01"
 
 # global config
 config: Dict[Any, Any] = {}
@@ -90,8 +90,6 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
     scanned_users = 0
 
     org_id = config['org_id']
-    client_id = config['client_id']
-    client_secret = config['client_secret']
 
     # noinspection SpellCheckingInspection
     ext = ".scaa"
@@ -121,11 +119,7 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
     conn = None
 
     try:
-        oauth = umapi_client.OAuthS2S(
-            client_id=client_id,
-            client_secret=client_secret
-        )
-        conn = umapi_client.Connection(org_id=org_id, auth=oauth)
+        conn = umapi_client.Connection(org_id=org_id, auth_dict=config)
     except Exception as e:
         log.exception(e)
 
@@ -231,12 +225,6 @@ def main():
         org_id = config["org_id"]
     else:
         raise ValueError(f"Cannot read 'org_id' from config file {configuration_file}")
-
-    if 'client_id' not in config:
-        raise ValueError(f"Cannot read 'client_id' from config file {configuration_file}")
-
-    if 'client_secret' not in config:
-        raise ValueError(f"Cannot read 'client_secret' from config file {configuration_file}")
 
     log_file = None
 
