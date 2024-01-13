@@ -1,7 +1,5 @@
 # adobe-scanner
 
-This is the UMAPI 3 OAuth 2.0 based scanner. The older JWT based scanner is in the Folder JWT
-
 ## Adobe cloud scanner for [OctoSAM Inventory](https://www.octosoft.ch)
 
 ## Basic operation
@@ -13,7 +11,7 @@ The produced file has a .scaa extension.
 
 The current version of the scanner was tested with Python 3.11.6
 
-System-wide installation is recommended. If you install in the user context, 
+System-wide installation is recommended. If you install Python in the user context, 
 you have to consider the user context for invocation of the script - for example from the OctoSAM Service Account.
 
 Update pip and install the required python modules. 
