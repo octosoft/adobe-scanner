@@ -115,7 +115,8 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
 
     meta = doc.createElement('meta')
     append_info_element(doc, meta, 'org_id', 'S', org_id)
-    append_info_element(doc, meta, 'tech_acct_id', 'S', config['tech_acct_id'])
+    # need meta/tech_acct_id for import with older builds of OctoSAM
+    append_info_element(doc, meta, 'tech_acct_id', 'S', 'backward-compatibility')
     xml.appendChild(meta)
 
     conn = None
