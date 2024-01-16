@@ -17,7 +17,7 @@ from xml.dom.minidom import Document, Element
 import umapi_client
 
 # noinspection SpellCheckingInspection
-octoscan_build = "adobe_scanner 1.10.7.70 - 2024-01-13"
+octoscan_build = "adobe_scanner 1.10.7.78 - 2024-01-13"
 
 # global config
 config: Dict[Any, Any] = {}
@@ -115,6 +115,7 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
 
     meta = doc.createElement('meta')
     append_info_element(doc, meta, 'org_id', 'S', org_id)
+    append_info_element(doc, meta, 'client_id','S', client_id)
     # need meta/tech_acct_id for import with older builds of OctoSAM
     append_info_element(doc, meta, 'tech_acct_id', 'S', 'backward-compatibility')
     xml.appendChild(meta)
