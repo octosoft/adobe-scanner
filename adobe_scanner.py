@@ -10,7 +10,7 @@ import logging
 # noinspection PyCompatibility
 from pathlib import Path
 from datetime import datetime, date
-from optparse import OptionParser
+from argparse import ArgumentParser
 from uuid import uuid1
 from xml.dom.minidom import Document, Element
 
@@ -178,30 +178,30 @@ def main():
     Main function
     """
     global config
-    parser = OptionParser()
+    parser = ArgumentParser()
 
     # noinspection SpellCheckingInspection
-    parser.add_option("-o", "--outputfolder", dest="output_folder",
+    parser.add_argument("-o", "--outputfolder", dest="output_folder",
                       default=".",
                       help="write output file to specified directory")
 
-    parser.add_option("-t", "--tag", dest="tag",
+    parser.add_argument("-t", "--tag", dest="tag",
                       default="",
                       help="specify a tag that gets identify this specific scanner configuration")
 
-    parser.add_option("-u", "--uuid", dest="uuid",
+    parser.add_argument("-u", "--uuid", dest="uuid",
                       help="specify unique id to use",
                       default=str(uuid1()))
 
-    parser.add_option("-l", "--log", dest="log_level",
+    parser.add_argument("-l", "--log", dest="log_level",
                       help="specify loglevel to use",
                       default="INFO")
 
-    parser.add_option("-c", "--config", dest="config_file",
+    parser.add_argument("-c", "--config", dest="config_file",
                       help="specify configuration file to use",
                       default="")
 
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
 
     #
     # probe for configuration file outside current folder
