@@ -42,13 +42,15 @@ Configure these values in adobe_scanner_config.yaml
 Choose a location of the adobe_scanner_config.yaml so that the specified 
 secrets are protected from reading by non-privileged users.
 
+The default configuration file name is %OCTOSAM_CONFIGURATION_FOLDER%\adobe_scanner_config.yaml
+
 ### Invocation and collection of generated files
 
 ```bash
 python adobe_scanner.py --config d:\OctoSAM\MySecretConfigs\adobe_scanner_config.yaml
 ```
 
-You are free on how to transfer the generated files to the OctoSAM Import Service import folder.
+You may use any method to transfer the generated files to the OctoSAM Import Service import folder.
 If you run the scanner on Windows, you can configure the collection share in adobe_scanner_config.yaml.
 The files can also be uploaded via OctoCollect upload server running on Windows or Linux.
 
