@@ -47,6 +47,8 @@ You need the following information to configure a client connection
 
 Configure these values in adobe_scanner_config.yaml
 
+You can also store the client secret in the windows credential manager by configuring the credential manager target.
+
 The default configuration file name is %OCTOSAM_CONFIGURATION_FOLDER%\adobe_scanner_config.yaml
 
 ### Invocation and collection of generated files
