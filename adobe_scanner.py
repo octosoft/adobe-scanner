@@ -6,6 +6,7 @@ import yaml
 import gzip
 import time
 import logging
+import keyring
 
 # noinspection PyCompatibility
 from pathlib import Path
@@ -91,7 +92,12 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
 
     org_id = config['org_id']
     client_id = config['client_id']
-    client_secret = config['client_secret']
+
+    if 'client_secret_credential_manager_target' in config:
+        target = config['client_secret_credential_manager_target']
+        client_secret = keyring.get_password(target, client_id)
+    else:
+        client_secret = config['client_secret']
 
     # noinspection SpellCheckingInspection
     ext = ".scaa"
@@ -115,7 +121,7 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
 
     meta = doc.createElement('meta')
     append_info_element(doc, meta, 'org_id', 'S', org_id)
-    append_info_element(doc, meta, 'client_id','S', client_id)
+    append_info_element(doc, meta, 'client_id', 'S', client_id)
     # need meta/tech_acct_id for import with older builds of OctoSAM
     append_info_element(doc, meta, 'tech_acct_id', 'S', 'backward-compatibility')
     xml.appendChild(meta)
@@ -182,24 +188,24 @@ def main():
 
     # noinspection SpellCheckingInspection
     parser.add_argument("-o", "--outputfolder", dest="output_folder",
-                      default=".",
-                      help="write output file to specified directory")
+                        default=".",
+                        help="write output file to specified directory")
 
     parser.add_argument("-t", "--tag", dest="tag",
-                      default="",
-                      help="specify a tag that gets identify this specific scanner configuration")
+                        default="",
+                        help="specify a tag that gets identify this specific scanner configuration")
 
     parser.add_argument("-u", "--uuid", dest="uuid",
-                      help="specify unique id to use",
-                      default=str(uuid1()))
+                        help="specify unique id to use",
+                        default=str(uuid1()))
 
     parser.add_argument("-l", "--log", dest="log_level",
-                      help="specify loglevel to use",
-                      default="INFO")
+                        help="specify loglevel to use",
+                        default="INFO")
 
     parser.add_argument("-c", "--config", dest="config_file",
-                      help="specify configuration file to use",
-                      default="")
+                        help="specify configuration file to use",
+                        default="")
 
     options = parser.parse_args()
 
@@ -237,8 +243,8 @@ def main():
     if 'client_id' not in config:
         raise ValueError(f"Cannot read 'client_id' from config file {configuration_file}")
 
-    if 'client_secret' not in config:
-        raise ValueError(f"Cannot read 'client_secret' from config file {configuration_file}")
+    if 'client_secret' not in config and 'client_secret_credential_manager_target' not in config:
+        raise ValueError(f"Cannot read 'client_secret' or 'client_secret_credential_manager_target' from config file {configuration_file}")
 
     log_file = None
 
