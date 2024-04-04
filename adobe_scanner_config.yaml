@@ -7,8 +7,6 @@
 #
 # https://adobe-apiplatform.github.io/umapi-documentation/en/UM_Authentication.html
 #
-# be careful where to place this file as it contains private information
-#
 # the scanner reads the file either from the current directory or from OCTOSAM_CONFIGURATION_FOLDER if found there
 #
 
