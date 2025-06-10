@@ -1,0 +1,10 @@
+
+June 2025:
+
+Even though cryptography reports a security issue the current versions are hardcoded in the Adobe module
+do not update the following modules to higher versions than in requirements.txt:
+
+
+cryptography         38.0.4
+PyJWT                2.4
+

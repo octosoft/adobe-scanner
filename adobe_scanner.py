@@ -108,7 +108,7 @@ def scan_umapi(log: logging.Logger, options: Any, output_folder: Path) -> None:
     doc = Document()
     xml = doc.createElement('octoscan')
     xml.setAttribute("uuid", options.uuid)
-    xml.setAttribute("timestamp", datetime.utcnow().replace(microsecond=0).isoformat())
+    xml.setAttribute("timestamp", datetime.now().replace(microsecond=0).isoformat())
     xml.setAttribute("build", octoscan_build)
 
     doc.appendChild(xml)
