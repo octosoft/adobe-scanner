@@ -1,8 +1,8 @@
 
 June 2025:
 
-Even though cryptography reports a security issue the current versions are hardcoded in the Adobe module
-do not update the following modules to higher versions than in requirements.txt:
+Even though cryptography reports a security issue the current versions are hardcoded in the Adobe module.
+Do not update the following modules to higher versions than in requirements.txt:
 
 
 cryptography         38.0.4

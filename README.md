@@ -9,9 +9,9 @@ The produced file has a .scaa extension.
 
 ### Installation
 
-The current version of the scanner was tested with Python 3.11.7
+The current version of the scanner was tested with Python 3.13.0
 
-The recommended Python installation folder is c:\Python\Python311.
+The recommended Python installation folder is c:\Python\Python313.
 System-wide installation for all users is advised.
 
 If you install Python in the user context,
