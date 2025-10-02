@@ -1,6 +1,15 @@
 # adobe-scanner
 
-## Adobe cloud scanner for [OctoSAM Inventory](https://www.octosoft.ch)
+## Deprecated Adobe cloud scanner for OctoSAM Inventory  
+
+With the release of the [OctoSAM Inventory](https://www.octosoft.ch) version 1.11.7,
+the python-based Adobe scanner will no longer be maintained.
+
+We recommend migrating to the new integrated Adobe UMAPI scan module
+that is built-in into the OctoSAM Import Service.
+
+Currently, importing of the Python-based Adobe scanner results is still supported, but the 
+function will be removed in a future release.
 
 ## Basic operation
 
